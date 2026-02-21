@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>Admin Dashboard</header>
+
+<div class="container">
+
+<div id="loginSection">
+<h3>Login</h3>
+<input id="username" placeholder="Username">
+<input id="password" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<div id="adminSection" style="display:none;">
+<h3>Add Product</h3>
+<input id="pname" placeholder="Name">
+<input id="pprice" placeholder="Price">
+<input type="file" id="pimage">
+<button onclick="addProduct()">Add Product</button>
+
+<h3>Products</h3>
+<div id="productList"></div>
+
+<h3>Orders</h3>
+<div id="orderList"></div>
+</div>
+
+</div>
+
+<script>
+async function checkAuth(){
+const res=await fetch("/check-auth");
+const data=await res.json();
+if(data.authenticated){
+loginSection.style.display="none";
+adminSection.style.display="block";
+loadData();
+}
+}
+
+async function login(){
+const res=await fetch("/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+username:username.value,
+password:password.value
+})
+});
+const data=await res.json();
+if(data.success) location.reload();
+else alert("Invalid");
+}
+
+async function addProduct(){
+const formData=new FormData();
+formData.append("name",pname.value);
+formData.append("price",pprice.value);
+formData.append("image",pimage.files[0]);
+
+await fetch("/add-product",{method:"POST",body:formData});
+location.reload();
+}
+
+async function loadData(){
+const products=await (await fetch("/products")).json();
+const orders=await (await fetch("/orders")).json();
+
+productList.innerHTML="";
+products.forEach(p=>{
+productList.innerHTML+=`
+<div>
+${p.name} - $${p.price}
+<button onclick="deleteProduct('${p.id}')">Delete</button>
+</div>`;
+});
+
+orderList.innerHTML="";
+orders.forEach(o=>{
+orderList.innerHTML+=`
+<div>
+Order ${o.id} - ${o.status}
+<button onclick="updateOrder('${o.id}','Delivered')">Mark Delivered</button>
+</div>`;
+});
+}
+
+async function deleteProduct(id){
+await fetch("/delete-product/"+id,{method:"DELETE"});
+location.reload();
+}
+
+async function updateOrder(id,status){
+await fetch("/update-order/"+id,{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({status})
+});
+location.reload();
+}
+
+checkAuth();
+</script>
+</body>
+</html>

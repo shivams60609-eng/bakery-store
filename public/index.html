@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Sweet Crumbs & Crafts</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>🍰 Sweet Crumbs & Crafts 🧵</header>
+
+<div class="container">
+    <div class="products" id="products"></div>
+
+    <div class="cart">
+        <h3>🛒 Cart</h3>
+        <div id="cartItems"></div>
+        <h4 id="total"></h4>
+        <input type="text" id="address" placeholder="Delivery Address">
+        <button onclick="placeOrder()">Place Order</button>
+    </div>
+</div>
+
+<script>
+let cart = [];
+
+async function loadProducts(){
+    const res = await fetch("/products");
+    const products = await res.json();
+    const container = document.getElementById("products");
+    container.innerHTML="";
+
+    products.forEach(p=>{
+        container.innerHTML+=`
+        <div class="card">
+            <img src="${p.image}">
+            <h4>${p.name}</h4>
+            <p>$${p.price}</p>
+            <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+        </div>`;
+    });
+}
+
+function addToCart(p){
+    const existing=cart.find(i=>i.id===p.id);
+    if(existing) existing.qty++;
+    else cart.push({...p,qty:1});
+    renderCart();
+}
+
+function renderCart(){
+    const container=document.getElementById("cartItems");
+    container.innerHTML="";
+    let total=0;
+
+    cart.forEach(i=>{
+        total+=i.price*i.qty;
+        container.innerHTML+=`
+        <div>
+            ${i.name} - $${i.price}
+            <button onclick="changeQty('${i.id}',-1)">-</button>
+            ${i.qty}
+            <button onclick="changeQty('${i.id}',1)">+</button>
+            <button onclick="removeItem('${i.id}')">Remove</button>
+        </div>`;
+    });
+
+    document.getElementById("total").innerText="Total: $"+total.toFixed(2);
+}
+
+function changeQty(id,c){
+    const item=cart.find(i=>i.id===id);
+    item.qty+=c;
+    if(item.qty<=0) removeItem(id);
+    renderCart();
+}
+
+function removeItem(id){
+    cart=cart.filter(i=>i.id!==id);
+    renderCart();
+}
+
+async function placeOrder(){
+    const address=document.getElementById("address").value;
+    if(!address||cart.length===0) return alert("Complete order");
+
+    const total=cart.reduce((s,i)=>s+i.price*i.qty,0);
+
+    await fetch("/order",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({items:cart,total,address})
+    });
+
+    cart=[];
+    renderCart();
+    alert("Order placed!");
+}
+
+loadProducts();
+</script>
+</body>
+</html>
