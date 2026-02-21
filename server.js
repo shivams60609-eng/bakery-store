@@ -49,8 +49,6 @@ const authMiddleware = (req, res, next) => {
     else res.status(401).json({ message: "Unauthorized" });
 };
 
-
-
 // ================= PRODUCTS =================
 
 app.get("/products", (req, res) => {
@@ -85,7 +83,6 @@ app.post("/edit-product/:id", authMiddleware, upload.single("image"), (req, res)
     product.price = parseFloat(req.body.price);
 
     if (req.file) {
-        // delete old image
         const oldPath = path.join(__dirname, "public", product.image);
         if (fs.existsSync(oldPath)) fs.unlinkSync(oldPath);
         product.image = "/uploads/" + req.file.filename;
@@ -108,8 +105,6 @@ app.delete("/delete-product/:id", authMiddleware, (req, res) => {
 
     res.json({ message: "Deleted" });
 });
-
-
 
 // ================= ORDERS =================
 
@@ -149,8 +144,6 @@ app.post("/update-order/:id", authMiddleware, (req, res) => {
     res.json({ message: "Updated" });
 });
 
-
-
 // ================= AUTH =================
 
 app.post("/login", (req, res) => {
@@ -168,9 +161,7 @@ app.get("/check-auth", (req, res) => {
     res.json({ authenticated: !!req.session.isAdmin });
 });
 
-app.listen(PORT, () =>
-    console.log("Server running on http://localhost:" + PORT)
-);
+// ✅ ONLY ONE listen
 app.listen(PORT, () => {
     console.log("Server running on port " + PORT);
 });
