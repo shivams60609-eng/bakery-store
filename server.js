@@ -149,7 +149,7 @@ app.post("/update-order/:id", authMiddleware, (req, res) => {
 app.post("/login", (req, res) => {
     const { username, password } = req.body;
 
-    if (username === "admin" && password === "admin123") {
+    if (username === "arti singh" && password === "arti2005") {
         req.session.isAdmin = true;
         res.json({ success: true });
     } else {

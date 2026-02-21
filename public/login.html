@@ -2,42 +2,75 @@
 <html>
 <head>
     <title>Admin Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f8f8f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            width: 300px;
+            text-align: center;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+        }
+
+        button {
+            width: 100%;
+            padding: 8px;
+            background: #ff6b6b;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #ff4c4c;
+        }
+    </style>
 </head>
 <body>
+
+<div class="login-box">
     <h2>Admin Login</h2>
 
-    <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required><br><br>
-        <input type="password" id="password" placeholder="Password" required><br><br>
-        <button type="submit">Login</button>
-    </form>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
 
-    <p id="message"></p>
+    <button onclick="login()">Login</button>
+</div>
 
-    <script>
-        document.getElementById("loginForm").addEventListener("submit", async (e) => {
-            e.preventDefault();
+<script>
+async function login() {
+    const username = document.getElementById("username").value;
+    const password = document.getElementById("password").value;
 
-            const username = document.getElementById("username").value;
-            const password = document.getElementById("password").value;
+    const res = await fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password })
+    });
 
-            const res = await fetch("/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ username, password })
-            });
+    if (res.ok) {
+        alert("Login successful!");
+        window.location.href = "/admin.html";   // redirect to admin dashboard
+    } else {
+        alert("Invalid credentials!");
+    }
+}
+</script>
 
-            const data = await res.json();
-
-            if (data.success) {
-                document.getElementById("message").innerText = "Login successful!";
-                window.location.href = "/";
-            } else {
-                document.getElementById("message").innerText = "Invalid credentials!";
-            }
-        });
-    </script>
 </body>
 </html>
